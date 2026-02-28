@@ -1,4 +1,4 @@
-namespace RatingService.Domain;
+namespace Hotelier.Events;
 
 /// <summary>
 /// Published when a guest rates a host.
@@ -10,5 +10,6 @@ public record HostRated
     public Guid GuestId { get; init; }
     public Guid HostId { get; init; }
     public int Score { get; init; }
+    public string? Comment { get; init; }
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
