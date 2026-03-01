@@ -1,3 +1,4 @@
+using RatingService.Domain;
 using RatingService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
@@ -7,6 +8,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +61,24 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddHttpClient<IReservationServiceClient, ReservationServiceClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Reservation"] ?? "http://reservation-service:8080";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddHttpClient<IAccommodationServiceClient, AccommodationServiceClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Accommodation"] ?? "http://accommodation-service:8080";
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
